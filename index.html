@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healio</title>
+    <link rel="stylesheet" href="static/hackpsu.css"> <!-- Link to external CSS file -->
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        Healio
+    </div>
+    <div class="chat-box" id="chat-box">
+        <div class="chat-message bot-message">
+            <p>Hello! I'm your Health Assistant Chatbot. You can ask me any health-related questions.</p>
+        </div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    const chatBox = document.getElementById('chat-box');
+    const inputField = document.getElementById('chat-input');
+
+    // Function to handle sending the message
+    async function sendMessage() {
+        const userInput = inputField.value.trim();
+        
+        if (!userInput) {
+            alert("Please enter a message.");
+            return;
+        }
+
+        // Append user's message to the chat box
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'chat-message user-message';
+        userMessageDiv.innerHTML = `<p>${userInput}</p>`;
+        chatBox.appendChild(userMessageDiv);
+
+        // Scroll to the bottom of the chat box
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Clear input field
+        inputField.value = '';
+
+        // Show bot typing indicator
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.className = 'chat-message bot-message';
+        botMessageDiv.innerHTML = `<p>Typing...</p>`;
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Send the message to the Flask server
+        const response = await fetch("/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ input: userInput })
+        });
+
+        const data = await response.json();
+        botMessageDiv.innerHTML = `<p>${data.conversation}</p>`;
+
+        // Scroll to the bottom of the chat box
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // Detect Enter key press and send the message
+    inputField.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+            event.preventDefault();  // Prevents default behavior of Enter key
+        }
+    });
+</script>
+
+</body>
+</html>
